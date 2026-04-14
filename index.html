@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Final Project Discovery — Group Discussion</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --soil:#0e0f18; --bark:#181a2e; --moss:#1e2240; --fern:#2a3060;
+    --leaf:#3d4a8a; --sprout:#6b7fd4; --lichen:#a8b4e8; --cream:#eeedf8;
+    --fog:#b0aed0; --mist:#7a789a; --spore:#c4a8f0; --algae:#5a4a8a;
+    --radius:2px;
+    --mod02:#d46a8a; --mod03:#6abed4; --mod04:#d4aa6a; --mod05:#6ad48a;
+    --mod02-bg:rgba(212,106,138,0.12); --mod03-bg:rgba(106,190,212,0.12);
+    --mod04-bg:rgba(212,170,106,0.12); --mod05-bg:rgba(106,212,138,0.12);
+    --active-mod: var(--sprout);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--soil);color:var(--cream);font-family:'Courier Prime',monospace;min-height:100vh;
+    background-image:radial-gradient(ellipse at 15% 20%,rgba(107,127,212,.10) 0%,transparent 55%),
+    radial-gradient(ellipse at 85% 80%,rgba(90,74,138,.08) 0%,transparent 55%);}
+
+  /* ── SETUP ── */
+  #setup-screen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:2rem;}
+  .setup-card{background:var(--bark);border:1px solid var(--fern);border-radius:var(--radius);padding:3rem;
+    max-width:560px;width:100%;box-shadow:0 0 0 1px var(--moss),16px 16px 0 var(--soil);
+    animation:riseUp .6s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden;}
+  .setup-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+    background:linear-gradient(90deg,var(--mod02),var(--mod03),var(--mod04),var(--mod05));}
+  .setup-eyebrow{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--sprout);margin-bottom:1.25rem;}
+  .setup-card h1{font-family:'Fraunces',serif;font-size:2.2rem;font-weight:700;line-height:1.1;margin-bottom:.5rem;color:var(--cream);}
+  .setup-card h1 em{font-style:italic;font-weight:300;color:var(--lichen);display:block;font-size:1.8rem;}
+  .setup-tag{display:inline-block;background:rgba(107,127,212,.15);color:var(--sprout);font-size:.68rem;
+    padding:.2rem .65rem;border:1px solid rgba(107,127,212,.35);border-radius:99px;margin-bottom:1.5rem;letter-spacing:.1em;}
+  .setup-how{background:rgba(107,127,212,.07);border:1px solid var(--fern);border-radius:var(--radius);
+    padding:.9rem 1.1rem;margin-bottom:1.5rem;font-size:.78rem;color:var(--fog);line-height:1.7;}
+  .setup-how strong{color:var(--lichen);}
+  .field-group{margin-bottom:1.25rem;}
+  .field-group label{display:block;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--mist);margin-bottom:.4rem;}
+  .field-group input{width:100%;padding:.7rem 1rem;background:var(--soil);border:1px solid var(--moss);
+    border-radius:var(--radius);font-family:'Courier Prime',monospace;font-size:.95rem;color:var(--cream);transition:border-color .2s;}
+  .field-group input:focus{outline:none;border-color:var(--sprout);}
+  .field-group input::placeholder{color:var(--mist);opacity:.5;}
+  .role-toggle{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.5rem;}
+  .role-btn{padding:.7rem;border:1px solid var(--moss);border-radius:var(--radius);background:transparent;
+    cursor:pointer;font-family:'Courier Prime',monospace;font-size:.88rem;transition:all .2s;color:var(--fog);}
+  .role-btn.active{background:var(--fern);color:var(--cream);border-color:var(--sprout);}
+  .btn-primary{width:100%;padding:.9rem;background:linear-gradient(135deg,var(--fern),var(--algae));
+    color:var(--cream);border:none;border-radius:var(--radius);font-family:'Courier Prime',monospace;
+    font-weight:700;font-size:.9rem;cursor:pointer;transition:all .18s;letter-spacing:.06em;}
+  .btn-primary:hover{opacity:.85;transform:translateY(-1px);}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+  /* ── APP ── */
+  #app{display:none;}
+  .app-header{background:var(--bark);padding:.9rem 2rem;display:flex;align-items:center;
+    justify-content:space-between;position:sticky;top:0;z-index:100;
+    border-bottom:1px solid var(--moss);box-shadow:0 2px 20px rgba(0,0,0,.4);}
+  .app-header h2{font-family:'Fraunces',serif;font-size:.95rem;font-weight:600;color:var(--cream);display:flex;align-items:center;gap:.6rem;}
+  .app-header h2 span{color:var(--lichen);}
+  .header-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;}
+  .session-badge{background:rgba(107,127,212,.15);color:var(--sprout);padding:.2rem .7rem;border-radius:99px;
+    font-size:.7rem;border:1px solid rgba(107,127,212,.3);letter-spacing:.06em;}
+  .track-badge{padding:.2rem .7rem;border-radius:99px;font-size:.7rem;font-weight:700;letter-spacing:.06em;display:none;}
+  .track-badge.m02{background:var(--mod02-bg);color:var(--mod02);border:1px solid rgba(212,106,138,.3);}
+  .track-badge.m03{background:var(--mod03-bg);color:var(--mod03);border:1px solid rgba(106,190,212,.3);}
+  .track-badge.m04{background:var(--mod04-bg);color:var(--mod04);border:1px solid rgba(212,170,106,.3);}
+  .track-badge.m05{background:var(--mod05-bg);color:var(--mod05);border:1px solid rgba(106,212,138,.3);}
+  .user-badge{background:linear-gradient(135deg,var(--fern),var(--algae));color:var(--cream);
+    padding:.2rem .75rem;border-radius:99px;font-size:.78rem;font-weight:700;}
+  .app-body{max-width:940px;margin:0 auto;padding:2rem 1.5rem;}
+
+  /* ── ADMIN / STUDENT PANELS ── */
+  .admin-panel{background:var(--bark);border:1px solid var(--fern);border-left:4px solid var(--spore);
+    border-radius:var(--radius);padding:1.25rem 1.75rem;margin-bottom:1rem;}
+  .admin-panel h3{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--spore);margin-bottom:1rem;}
+  .admin-actions{display:flex;gap:.75rem;flex-wrap:wrap;}
+  .btn-admin{padding:.55rem 1.2rem;background:rgba(255,255,255,.05);color:var(--fog);border:1px solid var(--moss);
+    border-radius:var(--radius);font-family:'Courier Prime',monospace;cursor:pointer;transition:all .15s;font-size:.85rem;}
+  .btn-admin:hover{background:rgba(255,255,255,.12);border-color:var(--fern);}
+  .btn-admin.advance{background:linear-gradient(135deg,var(--fern),var(--algae));color:var(--cream);border-color:transparent;font-weight:700;}
+  .btn-admin.danger{border-color:rgba(180,60,60,.4);color:#e08080;}
+  .btn-admin.danger:hover{background:rgba(180,60,60,.15);}
+  .student-panel{background:var(--bark);border:1px solid var(--moss);border-radius:var(--radius);
+    padding:.9rem 1.5rem;margin-bottom:1.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;}
+  .student-panel-label{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--mist);}
+  .student-actions{display:flex;gap:.6rem;flex-wrap:wrap;}
+  .btn-export{padding:.45rem 1rem;background:transparent;color:var(--fog);border:1px solid var(--moss);
+    border-radius:var(--radius);font-family:'Courier Prime',monospace;font-size:.82rem;cursor:pointer;transition:all .15s;}
+  .btn-export:hover{border-color:var(--sprout);color:var(--lichen);}
+
+  /* ── MODULE SELECTION SCREEN ── */
+  #module-select-block{display:none;}
+  .module-select-card{background:var(--bark);border:1px solid var(--moss);border-radius:var(--radius);
+    padding:2rem;margin-bottom:1rem;position:relative;overflow:hidden;}
+  .module-select-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--mod02),var(--mod03),var(--mod04),var(--mod05));}
+  .module-select-eyebrow{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sprout);margin-bottom:.6rem;}
+  .module-select-title{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:600;color:var(--cream);margin-bottom:.5rem;}
+  .module-select-sub{font-size:.88rem;color:var(--fog);line-height:1.7;margin-bottom:1.75rem;}
+  .module-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  @media(max-width:600px){.module-choice-grid{grid-template-columns:1fr;}}
+  .module-choice-btn{padding:1.25rem 1.4rem;border-radius:var(--radius);border:1.5px solid;
+    background:transparent;cursor:pointer;text-align:left;transition:all .2s;font-family:'Courier Prime',monospace;}
+  .module-choice-btn .mc-label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:.35rem;display:block;}
+  .module-choice-btn .mc-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:600;display:block;margin-bottom:.3rem;}
+  .module-choice-btn .mc-desc{font-size:.75rem;line-height:1.6;display:block;}
+  .module-choice-btn.m02{border-color:rgba(212,106,138,.3);color:var(--fog);}
+  .module-choice-btn.m02:hover,.module-choice-btn.m02.selected{background:var(--mod02-bg);border-color:var(--mod02);}
+  .module-choice-btn.m02 .mc-label{color:var(--mod02);}
+  .module-choice-btn.m02 .mc-title{color:var(--mod02);}
+  .module-choice-btn.m03{border-color:rgba(106,190,212,.3);color:var(--fog);}
+  .module-choice-btn.m03:hover,.module-choice-btn.m03.selected{background:var(--mod03-bg);border-color:var(--mod03);}
+  .module-choice-btn.m03 .mc-label{color:var(--mod03);}
+  .module-choice-btn.m03 .mc-title{color:var(--mod03);}
+  .module-choice-btn.m04{border-color:rgba(212,170,106,.3);color:var(--fog);}
+  .module-choice-btn.m04:hover,.module-choice-btn.m04.selected{background:var(--mod04-bg);border-color:var(--mod04);}
+  .module-choice-btn.m04 .mc-label{color:var(--mod04);}
+  .module-choice-btn.m04 .mc-title{color:var(--mod04);}
+  .module-choice-btn.m05{border-color:rgba(106,212,138,.3);color:var(--fog);}
+  .module-choice-btn.m05:hover,.module-choice-btn.m05.selected{background:var(--mod05-bg);border-color:var(--mod05);}
+  .module-choice-btn.m05 .mc-label{color:var(--mod05);}
+  .module-choice-btn.m05 .mc-title{color:var(--mod05);}
+  .module-confirm-row{margin-top:1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+  .btn-confirm-module{padding:.7rem 1.75rem;border:none;border-radius:var(--radius);
+    font-family:'Courier Prime',monospace;font-weight:700;font-size:.88rem;cursor:pointer;
+    background:linear-gradient(135deg,var(--fern),var(--algae));color:var(--cream);
+    opacity:.4;pointer-events:none;transition:all .2s;letter-spacing:.04em;}
+  .btn-confirm-module.ready{opacity:1;pointer-events:all;}
+  .btn-confirm-module.ready:hover{opacity:.85;transform:translateY(-1px);}
+  .module-confirm-note{font-size:.75rem;color:var(--mist);font-style:italic;}
+
+  /* ── QUESTION ── */
+  .question-header{background:var(--bark);border:1px solid var(--moss);
+    border-radius:var(--radius) var(--radius) 0 0;padding:1.75rem 2rem;position:relative;overflow:hidden;}
+  .question-header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--mod02),var(--mod03),var(--mod04),var(--mod05));}
+  .question-header.track-m02::before{background:var(--mod02);}
+  .question-header.track-m03::before{background:var(--mod03);}
+  .question-header.track-m04::before{background:var(--mod04);}
+  .question-header.track-m05::before{background:var(--mod05);}
+  .q-top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+  .q-number{font-size:.68rem;letter-spacing:.2em;color:var(--sprout);margin-bottom:.4rem;text-transform:uppercase;}
+  .q-tags{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.55rem;}
+  .q-tag{font-size:.6rem;padding:.15rem .55rem;border-radius:99px;font-weight:700;letter-spacing:.06em;}
+  .q-tag.multi{background:rgba(107,127,212,.15);color:var(--sprout);border:1px solid rgba(107,127,212,.3);}
+  .q-tag.m02{background:var(--mod02-bg);color:var(--mod02);border:1px solid rgba(212,106,138,.3);}
+  .q-tag.m03{background:var(--mod03-bg);color:var(--mod03);border:1px solid rgba(106,190,212,.3);}
+  .q-tag.m04{background:var(--mod04-bg);color:var(--mod04);border:1px solid rgba(212,170,106,.3);}
+  .q-tag.m05{background:var(--mod05-bg);color:var(--mod05);border:1px solid rgba(106,212,138,.3);}
+  .q-tag.passion{background:rgba(196,168,240,.15);color:var(--spore);border:1px solid rgba(196,168,240,.3);}
+  .q-tag.novel{background:rgba(196,168,240,.15);color:var(--spore);border:1px solid rgba(196,168,240,.3);}
+  .q-tag.activist{background:rgba(212,106,138,.18);color:#e898b8;border:1px solid rgba(212,106,138,.3);}
+  .q-tag.lived{background:rgba(106,212,138,.15);color:var(--mod05);border:1px solid rgba(106,212,138,.3);}
+  .q-tag.artwork{background:rgba(106,190,212,.15);color:var(--mod03);border:1px solid rgba(106,190,212,.3);}
+  .q-text{font-family:'Fraunces',serif;font-size:1.25rem;line-height:1.55;color:var(--cream);white-space:pre-wrap;}
+  .q-progress{font-size:.72rem;color:var(--mist);white-space:nowrap;padding-top:.25rem;opacity:.6;}
+
+  /* ── DISCUSSION + RESEARCH BLOCKS ── */
+  .discussion-block{background:rgba(107,127,212,.07);border:1px solid var(--fern);border-top:none;
+    padding:1.1rem 2rem;display:flex;gap:1.25rem;align-items:flex-start;}
+  .disc-icon{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sprout);
+    white-space:nowrap;padding-top:.08rem;flex-shrink:0;}
+  .disc-text{font-size:.88rem;line-height:1.75;color:var(--fog);font-style:italic;}
+  .disc-text strong{font-style:normal;color:var(--lichen);font-weight:700;}
+  .research-block{background:rgba(196,168,240,.06);border:1px solid rgba(196,168,240,.2);border-top:none;padding:1rem 2rem;}
+  .research-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.65rem;}
+  .research-label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--spore);}
+  .research-rule{flex:1;height:1px;background:rgba(196,168,240,.18);}
+  .research-chips{display:flex;flex-wrap:wrap;gap:.4rem;}
+  .research-chip{font-size:.7rem;padding:.2rem .6rem;border-radius:99px;
+    background:rgba(196,168,240,.1);color:var(--spore);border:1px solid rgba(196,168,240,.22);letter-spacing:.04em;}
+  .research-note{font-size:.76rem;color:var(--mist);margin-top:.55rem;font-style:italic;line-height:1.6;}
+
+  /* ── ANSWER SECTION ── */
+  .answer-section{background:var(--moss);border:1px solid var(--fern);border-top:none;
+    border-radius:0 0 var(--radius) var(--radius);padding:1.5rem 2rem;margin-bottom:1rem;}
+  .answer-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;}
+  @media(max-width:680px){.answer-layout{grid-template-columns:1fr;}}
+  .answer-col-label{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--lichen);display:block;margin-bottom:.4rem;}
+  .answer-col-sub{font-size:.65rem;color:var(--mist);font-style:italic;margin-bottom:.55rem;display:block;}
+  textarea.ta{width:100%;min-height:88px;padding:.75rem 1rem;background:var(--soil);
+    border:1px solid var(--fern);border-radius:var(--radius);font-family:'Courier Prime',monospace;
+    font-size:.9rem;color:var(--cream);resize:vertical;transition:border-color .2s;}
+  textarea.ta:focus{outline:none;border-color:var(--sprout);}
+  textarea.ta:disabled{opacity:.5;cursor:not-allowed;}
+  textarea.ta::placeholder{color:var(--mist);opacity:.5;}
+  .answer-actions{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;}
+  .btn-submit{padding:.6rem 1.5rem;background:linear-gradient(135deg,var(--fern),var(--algae));
+    color:var(--cream);border:none;border-radius:var(--radius);font-family:'Courier Prime',monospace;
+    font-weight:700;font-size:.82rem;cursor:pointer;transition:all .15s;letter-spacing:.04em;}
+  .btn-submit:hover{opacity:.82;transform:translateY(-1px);}
+  .btn-submit:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+  .btn-outline{padding:.6rem 1.25rem;background:transparent;color:var(--fog);border:1px solid var(--fern);
+    border-radius:var(--radius);font-family:'Courier Prime',monospace;cursor:pointer;transition:all .15s;font-size:.82rem;}
+  .btn-outline:hover{border-color:var(--sprout);color:var(--lichen);}
+  .divider{border:none;border-top:1px dashed var(--fern);margin:1.25rem 0;opacity:.5;}
+  .responses-label{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--lichen);
+    margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+  .resp-count{background:var(--fern);color:var(--lichen);font-size:.68rem;padding:.1rem .5rem;border-radius:99px;}
+  .responses-list{display:flex;flex-direction:column;gap:.75rem;}
+  .response-card{background:var(--bark);border-radius:var(--radius);padding:1rem 1.25rem;
+    border-left:3px solid var(--fern);animation:fadeLeaf .35s ease;}
+  .response-card.mine{border-left-color:var(--sprout);background:rgba(107,127,212,.08);}
+  .response-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;flex-wrap:wrap;gap:.4rem;}
+  .resp-name{font-weight:700;font-size:.8rem;color:var(--fog);}
+  .resp-name.mine{color:var(--sprout);}
+  .resp-group{font-size:.68rem;color:var(--spore);font-style:italic;}
+  .resp-time{font-size:.7rem;color:var(--mist);}
+  .resp-body{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+  @media(max-width:600px){.resp-body{grid-template-columns:1fr;}}
+  .resp-half-label{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mist);margin-bottom:.25rem;}
+  .resp-text{font-size:.9rem;line-height:1.7;color:var(--cream);}
+  .no-responses{color:var(--mist);font-style:italic;font-size:.88rem;text-align:center;padding:1rem 0;}
+
+  /* ── REVEAL ── */
+  .reveal-card{background:var(--bark);border:1px solid var(--leaf);border-radius:var(--radius);
+    padding:1.75rem 2rem;margin-bottom:2rem;animation:bloomIn .6s cubic-bezier(.175,.885,.32,1.275);
+    position:relative;overflow:hidden;}
+  .reveal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--mod02),var(--mod03),var(--mod04),var(--mod05));}
+  .reveal-label{display:flex;align-items:center;gap:.5rem;font-size:.68rem;letter-spacing:.15em;
+    text-transform:uppercase;color:var(--sprout);margin-bottom:.85rem;}
+  .reveal-title{font-family:'Fraunces',serif;font-size:1.2rem;margin-bottom:.65rem;color:var(--cream);}
+  .reveal-body{font-size:.92rem;line-height:1.85;color:var(--fog);white-space:pre-wrap;}
+
+  /* ── PREV QUESTIONS ── */
+  .prev-questions{margin-top:.5rem;}
+  .prev-questions h3{font-family:'Fraunces',serif;font-size:.95rem;font-style:italic;font-weight:300;margin-bottom:1rem;color:var(--mist);}
+  .prev-q-card{border:1px solid var(--moss);border-radius:var(--radius);margin-bottom:.75rem;overflow:hidden;}
+  .prev-q-header{background:var(--bark);padding:.85rem 1.25rem;display:flex;justify-content:space-between;
+    align-items:center;cursor:pointer;user-select:none;transition:background .15s;}
+  .prev-q-header:hover{background:var(--moss);}
+  .prev-q-title{font-size:.85rem;flex:1;margin-right:1rem;color:var(--fog);}
+  .prev-q-toggle{font-size:.72rem;color:var(--mist);white-space:nowrap;}
+  .prev-q-body{padding:1.25rem;display:none;background:var(--soil);}
+  .prev-q-body.open{display:block;}
+  .catchup-area{margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--moss);}
+  .catchup-area>label{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--sprout);display:block;margin-bottom:.75rem;}
+  .catchup-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.75rem;}
+  @media(max-width:600px){.catchup-grid{grid-template-columns:1fr;}}
+  .catchup-col-label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mist);display:block;margin-bottom:.35rem;}
+  .catchup-area textarea{width:100%;min-height:68px;padding:.65rem .9rem;background:var(--bark);
+    border:1px solid var(--moss);border-radius:var(--radius);font-family:'Courier Prime',monospace;
+    font-size:.9rem;color:var(--cream);resize:vertical;transition:border-color .2s;}
+  .catchup-area textarea:focus{outline:none;border-color:var(--sprout);}
+  .catchup-submitted{font-size:.85rem;color:var(--sprout);font-weight:700;margin-top:.5rem;}
+
+  /* ── TOAST / MODAL ── */
+  #toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(4rem);
+    background:var(--fern);color:var(--cream);padding:.7rem 1.5rem;border-radius:99px;
+    font-size:.85rem;font-family:'Courier Prime',monospace;transition:transform .3s ease;
+    z-index:9999;pointer-events:none;box-shadow:0 4px 24px rgba(0,0,0,.4);border:1px solid var(--sprout);}
+  #toast.show{transform:translateX(-50%) translateY(0);}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--bark);border:1px solid var(--fern);border-radius:var(--radius);padding:2rem;
+    max-width:420px;width:90%;box-shadow:12px 12px 0 var(--soil);animation:riseUp .2s ease;}
+  .modal h3{font-family:'Fraunces',serif;font-size:1.15rem;margin-bottom:.5rem;color:var(--cream);}
+  .modal p{color:var(--mist);margin-bottom:1.25rem;font-size:.88rem;}
+  .modal input{width:100%;padding:.7rem 1rem;background:var(--soil);border:1px solid var(--moss);
+    border-radius:var(--radius);font-family:'Courier Prime',monospace;color:var(--cream);margin-bottom:1rem;font-size:.95rem;}
+  .modal input:focus{outline:none;border-color:var(--sprout);}
+  .modal-actions{display:flex;gap:.75rem;justify-content:flex-end;}
+  .btn-cancel{padding:.6rem 1.25rem;background:transparent;border:1px solid var(--moss);
+    border-radius:var(--radius);cursor:pointer;font-family:'Courier Prime',monospace;color:var(--fog);}
+  .btn-confirm-action{padding:.6rem 1.25rem;background:linear-gradient(135deg,var(--fern),var(--algae));
+    color:var(--cream);border:none;border-radius:var(--radius);cursor:pointer;
+    font-family:'Courier Prime',monospace;font-weight:700;font-size:.82rem;}
+
+  @keyframes riseUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeLeaf{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes bloomIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  @media(max-width:600px){
+    .setup-card{padding:2rem 1.5rem;}
+    .app-header{flex-direction:column;gap:.5rem;align-items:flex-start;}
+    .question-header,.answer-section,.reveal-card{padding:1.25rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-eyebrow">// ART 104 — Final Project Prep</div>
+    <h1>Final Project<br><em>Group Discovery</em></h1>
+    <div class="setup-tag">◈ GROUP DISCUSSION · BRANCHING MODE</div>
+    <div class="setup-how">
+      <strong>How this works:</strong> All groups start together for the first three questions.
+      After Q3, each group picks the module they want to explore — then follows their own
+      track of questions from there.
+    </div>
+    <div class="field-group"><label>Session ID</label>
+      <input type="text" id="session-id" placeholder="e.g. groupdisc-01" value="groupdisc-1"></div>
+    <div class="field-group"><label>Your Name</label>
+      <input type="text" id="user-name" placeholder="e.g. Maya"></div>
+    <div class="field-group"><label>Group Name or Number</label>
+      <input type="text" id="group-name" placeholder="e.g. Group 3"></div>
+    <div style="margin-bottom:1.25rem">
+      <label style="display:block;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--mist);margin-bottom:.5rem">Join as</label>
+      <div class="role-toggle">
+        <button class="role-btn active" onclick="selectRole('student',this)">Student</button>
+        <button class="role-btn" onclick="selectRole('admin',this)">Admin</button>
+      </div>
+    </div>
+    <div id="admin-code-field" class="field-group" style="display:none">
+      <label>Admin Code</label>
+      <input type="password" id="admin-code-input" placeholder="Enter admin code">
+    </div>
+    <button class="btn-primary" id="join-btn" onclick="joinSession()">Enter Session →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-header">
+    <h2>◈ Group <span>Discovery</span></h2>
+    <div class="header-right">
+      <span class="session-badge" id="header-session"></span>
+      <span class="track-badge" id="track-badge"></span>
+      <span class="user-badge" id="header-user"></span>
+    </div>
+  </div>
+  <div class="app-body">
+    <div class="admin-panel" id="admin-panel" style="display:none">
+      <h3>// Admin Controls</h3>
+      <div class="admin-actions">
+        <button class="btn-admin advance" onclick="advanceQuestion()">▶ Next Question</button>
+        <button class="btn-admin" onclick="exportAllPDF()">⬇ Export All (PDF)</button>
+        <button class="btn-admin" onclick="exportByGroupPDF()">⬇ By Group (PDF)</button>
+        <button class="btn-admin danger" onclick="confirmReset()">✕ Reset All</button>
+      </div>
+    </div>
+    <div class="student-panel" id="student-panel" style="display:none">
+      <span class="student-panel-label">⬇ Export Notes</span>
+      <div class="student-actions">
+        <button class="btn-export" onclick="exportMyNotesPDF()">My Group's Notes (PDF)</button>
+        <button class="btn-export" onclick="exportAllPDF()">All Groups (PDF)</button>
+      </div>
+    </div>
+    <div id="reveal-zone"></div>
+    <div id="module-select-block"></div>
+    <div id="main-question-block"></div>
+    <div id="prev-questions-block"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="confirm-modal" class="modal-overlay">
+  <div class="modal">
+    <h3 id="confirm-title">Confirm</h3>
+    <p id="confirm-msg">Are you sure?</p>
+    <input type="password" id="confirm-code" placeholder="Enter admin code to confirm">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm-action" id="confirm-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script type="module">
+
+// ══════════════════════════════════════════════════════════════════════════════
+// QUESTION BANK
+// Structure:
+//   phase: 'shared' | 'select' | 'm02' | 'm03' | 'm04' | 'm05' | 'synthesis'
+//   tags: array of tag keys to display
+//   text, discussion, research[], researchNote, reveal
+// ══════════════════════════════════════════════════════════════════════════════
+
+const QUESTIONS = {
+
+  shared: [
+    // Q-S1
+    {
+      phase:'shared', tags:['multi'],
+      text:"Of the four modules we've covered — Human/Identity/Self, Information & Communication, Reality, and Nature/Ecology — which one surfaced most in your life outside class this week? Each person in the group shares one moment.",
+      discussion:"Go around the group. One moment each. Then look for patterns: does your group lean toward the same module, or are you pulled in different directions? Note any surprises.",
+      research:['Sociology','Psychology','Cultural studies','Media studies'],
+      researchNote:"Academic databases in these fields (PsycINFO, Communication Abstracts, Sociological Abstracts) are good first stops for articles grounding any of these topics in everyday life.",
+      reveal:null
+    },
+    // Q-S2
+    {
+      phase:'shared', tags:['multi'],
+      text:"Is there a question from any of the four modules that still feels unresolved — something the class touched on but didn't fully answer? What is it, and why does it stay open for you?",
+      discussion:"Each person names their unresolved question. Look for overlap. Could one of these open questions become the center of a final project? Which one feels most arguable — meaning, someone could push back on it?",
+      research:['Philosophy of technology','Science and technology studies (STS)','Ethics','Cognitive science'],
+      researchNote:"STS and philosophy of technology journals tackle exactly these 'unresolved' questions. Try the journal Science, Technology & Human Values or Philosophy & Technology as a first search.",
+      reveal:null
+    },
+    // Q-S3 — passion / surprise / novel interest
+    {
+      phase:'shared', tags:['multi','passion','novel'],
+      text:"What is something you feel genuinely passionate about, surprised by, or unexpectedly drawn to — in any of the four module areas? It doesn't have to be something you can explain yet. It can be an image, a feeling, a news story, a technology, a place, or an injustice. What is it, and why does it pull at you?",
+      discussion:"This is the most important question in the shared round. Give each person real time. Listen for what makes someone's voice change — that's the raw material of a strong project. After everyone shares, ask: which of these could become an artwork? Which already feels like an argument?",
+      research:['Personal experience and memory','Journalism and longform writing','Documentary and podcast media','Activist literature and manifestos'],
+      researchNote:"Strong final projects often start from a gut feeling before they find their academic grounding. After this conversation, search your key terms in Google Scholar or JSTOR just to see what fields have already been thinking about what you care about.",
+      reveal:{
+        title:"From passion to project",
+        body:"Whatever pulled at someone in your group just now — that's the seed. The final paper doesn't ask you to be neutral. It asks you to make an argument through a speculative artwork. The best arguments come from something you actually think matters.\n\nAfter Q3, you'll choose your module track. The questions that follow are designed to develop the intuition your group just named into a project direction."
+      }
+    }
+  ],
+
+  // ── MODULE 02: HUMAN / IDENTITY / SELF / BODY ──────────────────────────────
+  m02: [
+    {
+      phase:'m02', tags:['m02'],
+      text:"Think about the different versions of yourself that exist across digital platforms — profiles, avatars, handles, filtered images, personas you perform. As a group, map the range: how similar or different are your digital selves from how you experience yourselves offline?",
+      discussion:"Compare across the group. Who has the widest gap? Who has the narrowest? Which platforms make the split most extreme? What does the gap cost — emotionally, socially, politically?",
+      research:['Social psychology','Identity theory','Human-computer interaction','Communications','Gender studies'],
+      researchNote:"Search 'online identity formation', 'digital self-presentation', 'persona management social media' — PsycINFO and Communication Abstracts are most useful here.",
+      reveal:null
+    },
+    {
+      phase:'m02', tags:['m02','lived'],
+      text:"Has technology ever changed the way someone in your group thought about their own body — how it looks, moves, performs, ages, or is measured and tracked? Share the experience. What did the technology do to the relationship between your mind and your body?",
+      discussion:"Think broadly: fitness trackers, beauty filters, medical imaging, VR, gaming avatars, social media body comparisons, prosthetics, period apps, mental health trackers. Map the range. What's the most unexpected example in your group?",
+      research:['Body studies','Disability studies','Feminist theory','Medical humanities','Biopolitics'],
+      researchNote:"Search 'embodiment and technology', 'body image digital media', 'datafication of the body', 'quantified self' — disability studies and feminist theory have particularly rich literature here.",
+      reveal:null
+    },
+    {
+      phase:'m02', tags:['m02','passion','lived'],
+      text:"What is the aspect of identity and technology that your group feels most strongly about — the one that makes you want to say something, make something, or change something? Is it about control over your own image? The way platforms profit from self-comparison? Who gets to define what a 'normal' body or identity looks like in the age of AI?",
+      discussion:"Name the injustice or the tension your group most wants to address. Then ask: what would it mean to make artwork about this? Who would the audience be? What would you want them to feel or do differently afterward?",
+      research:['Surveillance studies','Platform economy and labor','Critical algorithm studies','Queer theory','Fat studies','Disability justice'],
+      researchNote:"Search 'algorithmic bias and identity', 'platform beauty standards', 'surveillance capitalism and the body' — intersectional frameworks from queer theory and disability justice can open unexpected angles.",
+      reveal:null
+    },
+    {
+      phase:'m02', tags:['m02','novel','artwork'],
+      text:"What digital artworks, games, films, or online experiences have made your group think differently about identity or the body? They don't have to be famous — they can be weird, obscure, or something you stumbled on. What did they do that felt new or unsettling or revelatory?",
+      discussion:"Each person names one work. Then look for patterns: what aesthetic strategies came up? AR overlays, avatars, data visualization, performance, text-based work? Which approaches feel most alive for your project?",
+      research:['Digital art history','New media art','Performance studies','Cyborg theory (Haraway)','Post-humanism'],
+      researchNote:"Search 'new media art identity', 'digital performance and the body', 'avatar art' — the journals Leonardo and Convergence cover digital art practice and theory. Also search specific artists: Hito Steyerl, Martine Syms, Cao Fei, Zach Blas.",
+      reveal:null
+    },
+    {
+      phase:'m02', tags:['m02','activist','novel'],
+      text:"If your group's speculative artwork could change one thing about how technology shapes identity or the body — what would it be? Imagine the artwork as an activist intervention: what does it expose, refuse, reimagine, or demand?",
+      discussion:"Draft one sentence: 'Our artwork intervenes in [specific thing] by [specific strategy].' Test it. Is it specific enough that someone could push back? Is the intervention something an artwork could actually do — not just describe, but enact?",
+      research:['Activist art and social practice','Tactical media','Feminist technoscience','Digital rights advocacy','Community organizing and tech'],
+      researchNote:"Search 'activist digital art', 'tactical media art', 'feminist hacktivist art' — Adbusters, the Electronic Frontier Foundation, and Feminist AI organizations publish accessible manifestos alongside academic work.",
+      reveal:{
+        title:"Module 02 project thread",
+        body:"Topic: Communication Technologies & the Fractured Self\n\nThe strongest papers in this track combine an artwork argument with at least one non-art framework — identity psychology, platform labor economics, medical/body studies, or critical algorithm research. The artwork isn't illustrating the idea — it's making the argument that plain writing can't."
+      }
+    }
+  ],
+
+  // ── MODULE 03: INFORMATION & COMMUNICATION ──────────────────────────────────
+  m03: [
+    {
+      phase:'m03', tags:['m03'],
+      text:"Share a recent example of information that was misleading, fabricated, or weaponized — from news, social media, or your personal experience. How did each person encounter it, and how did you figure out it was distorted?",
+      discussion:"Compare the discovery processes across your group. What does the range of experiences reveal about how information actually travels and how we develop (or fail to develop) the instinct to question it?",
+      research:['Journalism studies','Information science','Political science','Cognitive psychology','Linguistics'],
+      researchNote:"Search 'misinformation spread mechanisms', 'computational propaganda', 'media literacy interventions' — communication and political science databases are most useful. The Reuters Institute Digital News Report is freely accessible and data-rich.",
+      reveal:null
+    },
+    {
+      phase:'m03', tags:['m03','lived'],
+      text:"Has an algorithm ever shaped what your group members believed — about a topic, a person, a political situation, or the world — without you fully realizing it at the time? What made you notice, and what changed after you did?",
+      discussion:"Look for patterns: which platforms came up most? What made the algorithmic influence visible in retrospect? What would it take to make that invisible influence visible in an artwork — not just named but felt?",
+      research:['Algorithm studies','Data science ethics','Political economy of media','Critical data studies','Filter bubble research'],
+      researchNote:"Search 'filter bubble', 'algorithmic curation bias', 'platform power and belief' — Big Data & Society and New Media & Society are particularly relevant interdisciplinary journals.",
+      reveal:null
+    },
+    {
+      phase:'m03', tags:['m03','passion','lived'],
+      text:"What aspect of information and communication feels most urgent or enraging or important to your group — the one you want to actually do something about? Is it misinformation? Surveillance? Who controls the narrative about a community you belong to? The way platforms profit from outrage and division?",
+      discussion:"Name the injustice. Then ask: who is most harmed by it? What does it look like from inside that harm, and from outside? An artwork about information works best when it gives an audience the experience of something they can't otherwise access.",
+      research:['Privacy law and policy','Platform governance','Disinformation and democracy','Media justice','Algorithmic accountability'],
+      researchNote:"Search 'platform accountability advocacy', 'surveillance and marginalized communities', 'disinformation and elections' — policy organizations like Data & Society and AI Now publish accessible research alongside academic articles.",
+      reveal:null
+    },
+    {
+      phase:'m03', tags:['m03','novel','artwork'],
+      text:"What digital artworks, interactive experiences, journalism projects, or online interventions have made your group think differently about information, communication, or surveillance? What did they do aesthetically or technically that felt genuinely new?",
+      discussion:"Each person names one work. Look for strategies: data visualization, interactive archives, deepfakes used critically, text art, public interventions, games. Which approaches feel most relevant to what your group wants to make?",
+      research:['Data journalism','Investigative journalism as art','Hacktivism','Net art history','Critical visualization'],
+      researchNote:"Search 'data art surveillance', 'net art information', 'investigative journalism as artistic practice' — look at the work of Trevor Paglen, Forensic Architecture, Paolo Cirio, and Tega Brain as touchstones.",
+      reveal:null
+    },
+    {
+      phase:'m03', tags:['m03','activist','novel'],
+      text:"If your group's speculative artwork could intervene in one specific aspect of how information and communication operates — what would it expose, disrupt, archive, or reimagine? What would it ask its audience to do or understand differently?",
+      discussion:"Draft the intervention sentence: 'Our artwork intervenes in [specific system or practice] by [specific strategy].' Is it specific? Is it something art can do that a news article or policy paper can't? What does the artwork make you feel that other forms can't?",
+      research:['Tactical media and culture jamming','Counter-surveillance art','Community media','Open-source intelligence (OSINT) as artistic practice'],
+      researchNote:"Search 'tactical media art', 'counter-surveillance aesthetics', 'culture jamming' — the journal Fibreculture and the Critical Inquiry journal have relevant essays. The Yes Men and Electronic Disturbance Theater are useful activist art references.",
+      reveal:{
+        title:"Module 03 project thread",
+        body:"Topic: Information Systems, Surveillance & Digital Communication\n\nStrong papers here bring in at least one non-art framework — cognitive psychology on belief formation, political science on propaganda, legal/policy writing on data rights, or computational research on network dynamics. The artwork argument lands harder when the evidence isn't just aesthetic."
+      }
+    }
+  ],
+
+  // ── MODULE 04: REALITY ──────────────────────────────────────────────────────
+  m04: [
+    {
+      phase:'m04', tags:['m04'],
+      text:"Share a moment when you genuinely weren't sure what was real — a manipulated image, a vivid game moment that felt significant, a VR or AR experience, a dream you acted on, or a piece of media that changed how you saw something. Compare across the group: what did these experiences have in common?",
+      discussion:"Map the range of experiences. What conditions produced the uncertainty? Was it immersion? Emotion? Repetition? Speed? What does the range in your group suggest about how different people calibrate 'real'?",
+      research:['Phenomenology','Cognitive science','Philosophy of perception','Game studies','Film and media theory'],
+      researchNote:"Philosophy of perception and phenomenology have deep traditions on what makes experience 'real' — search 'sense of presence', 'virtual experience authenticity', 'embodied simulation'. The journal Game Studies is open-access and directly relevant.",
+      reveal:null
+    },
+    {
+      phase:'m04', tags:['m04','lived'],
+      text:"Can a virtual experience be just as meaningful — or as real — as a physical one? As a group, try to identify the specific conditions that would make a virtual experience genuinely significant. Test those conditions against actual experiences your group has had.",
+      discussion:"Where does the group agree? Where do you disagree? What does the disagreement reveal about what 'real' means to each of you? Is 'meaningful' the same as 'real' — or are those separate questions?",
+      research:['Virtual reality research','Presence and immersion studies','Neuroscience of experience','Grief and virtual memorials','Economy of virtual worlds'],
+      researchNote:"Search 'sense of presence VR', 'meaningful virtual experience', 'virtual grief and memorialization' — neuroscience journals and immersive media research offer empirical frameworks for this question.",
+      reveal:null
+    },
+    {
+      phase:'m04', tags:['m04','passion','lived'],
+      text:"What aspect of reality and simulation feels most urgent, unsettling, or important to your group — the one that makes you want to say something? Is it the way AI-generated content is destabilizing what counts as evidence? The way gaming or social media creates alternate realities that feel more real than physical life? Something about who gets to define what's real and for whom?",
+      discussion:"Name the tension. Then ask: who is most affected by this instability? What does it feel like from inside a reality that is being questioned? An artwork about reality works best when it puts the audience inside the problem — not outside looking at it.",
+      research:['Postmodern theory','Philosophy of simulation','Deep fake ethics and law','Virtual world governance','Digital epistemology'],
+      researchNote:"Search 'simulation theory and culture', 'deepfake epistemology', 'virtual world governance' — Baudrillard's Simulacra and Simulation is a key theoretical text. Also look at legal scholarship on digital evidence and synthetic media.",
+      reveal:null
+    },
+    {
+      phase:'m04', tags:['m04','novel','artwork'],
+      text:"What digital artworks, games, interactive experiences, or online environments have made your group genuinely question what's real — or genuinely feel something that seemed impossible in a digital medium? What did they do technically or aesthetically that felt new?",
+      discussion:"Each person names one work or experience. Look for strategies: mixed reality, procedural generation, glitch aesthetics, second-person narration, unreliable environments, AI characters. Which approaches feel most alive for your project?",
+      research:['Immersive media art','Glitch art and aesthetics','Interactive narrative','Worldbuilding studies','Speculative fiction theory'],
+      researchNote:"Search 'immersive art installation reality', 'glitch aesthetics', 'interactive narrative theory' — look at the work of teamLab, Ian Cheng, Refik Anadol, and Blast Theory as reference points.",
+      reveal:null
+    },
+    {
+      phase:'m04', tags:['m04','activist','novel'],
+      text:"If your group's speculative artwork could change how people experience or understand reality — what one thing would it do? Would it reveal a constructed reality as constructed? Would it make a virtual experience feel as weighty as a physical one? Would it put the audience inside a reality that has been denied or erased?",
+      discussion:"Draft the intervention: 'Our artwork changes how the audience understands reality by [specific strategy].' Is the change something only art can make — not a documentary, not a news story, not a policy paper? What does the medium make possible that nothing else can?",
+      research:['Activist world-building','Speculative design','Counter-factual history and art','Indigenous reality and land rights (digital sovereignty)'],
+      researchNote:"Search 'speculative design fiction', 'activist world-building', 'digital sovereignty indigenous' — Dunne & Raby's Speculative Everything is a key text. Also look at digital land rights activism and decolonial media projects.",
+      reveal:{
+        title:"Module 04 project thread",
+        body:"Topic: Video Games, Simulation & Speculative Identity\n\nStrong papers here ground the artwork argument in at least one non-art field — game studies, philosophy of mind, cognitive science on presence, economic/anthropological research on virtual behavior, or legal scholarship on synthetic media. The argument lands when the artwork illuminates something those fields can describe but can't enact."
+      }
+    }
+  ],
+
+  // ── MODULE 05: NATURE / ECOLOGY / ENVIRONMENT ───────────────────────────────
+  m05: [
+    {
+      phase:'m05', tags:['m05'],
+      text:"Think of a natural environment that matters to someone in your group — a place they've been, a species they feel connected to, or an ecosystem they've only encountered through screens. Share it with the group: why does it matter, what's its current status, and what does it mean that you may only be able to experience it digitally?",
+      discussion:"Map the range of relationships across your group. Do any of you feel connected to environments you've never physically visited? What does digital mediation of nature do to the experience of caring about it?",
+      research:['Environmental studies','Ecology','Conservation science','Environmental psychology','Climate communication'],
+      researchNote:"Environmental psychology journals cover how people form bonds with places and how media shapes environmental attitudes. Conservation science provides hard data on threatened ecosystems. Search 'digital nature and environmental identity', 'solastalgia'.",
+      reveal:null
+    },
+    {
+      phase:'m05', tags:['m05','lived'],
+      text:"Think through the full supply chain of a digital device in this room: mining, manufacturing, energy use, data centers, disposal. As a group, start with what you know — then identify what's hidden. Which parts of that chain have you never thought about? Which parts feel most uncomfortable to look at?",
+      discussion:"What is the most hidden part? Who lives near the extraction site, the factory, the e-waste dump? What would it mean to make one of those hidden relationships visible through an artwork? Who would need to see it?",
+      research:['Environmental justice','Political ecology','Supply chain studies','E-waste policy','Energy and infrastructure studies','Labor studies (tech manufacturing)'],
+      researchNote:"Search 'rare earth mining environmental impact', 'data center energy consumption', 'e-waste Global South', 'cobalt mining Congo' — environmental justice and political ecology journals have strong empirical research. Kate Crawford's Atlas of AI is a key reference.",
+      reveal:null
+    },
+    {
+      phase:'m05', tags:['m05','passion','lived'],
+      text:"What aspect of nature, ecology, and technology feels most urgent or personal to your group — the one that makes you want to act, document, mourn, or demand change? Is it climate grief? Species loss? The greenwashing of tech companies? A specific place or community that's being sacrificed for digital infrastructure?",
+      discussion:"Name the specific injustice or loss. Then ask: what does it feel like to live with this — as someone directly affected, and as someone at a distance? An artwork about ecology is most powerful when it closes the gap between those two positions.",
+      research:['Climate grief and eco-psychology','Environmental justice movement','Indigenous land rights','Degrowth economics','Post-carbon futures'],
+      researchNote:"Search 'climate grief art', 'environmental justice and digital media', 'indigenous data sovereignty', 'degrowth and technology' — Climate Psychology Alliance and Indigenous Environmental Network publish accessible writings alongside academic research.",
+      reveal:null
+    },
+    {
+      phase:'m05', tags:['m05','novel','artwork'],
+      text:"What digital artworks, data visualizations, interactive experiences, or media projects have made your group feel something different about nature, ecology, or the environment? What did they do aesthetically that felt genuinely new — not just informative but transformative?",
+      discussion:"Each person names one work. Look for strategies: data sonification, generative ecosystems, remote sensing imagery, interspecies communication experiments, speculative futures, mourning rituals for extinct species. Which approaches feel most alive for your project?",
+      research:['Environmental humanities','Eco-art history','Data art and ecology','Multispecies studies','Bio-art'],
+      researchNote:"Search 'ecological art data', 'bio-art and environment', 'multispecies art' — look at the work of Semiconductor, Anna Ridler, Agnes Denes, Tega Brain, and The Center for PostNatural History as reference points.",
+      reveal:null
+    },
+    {
+      phase:'m05', tags:['m05','activist','novel'],
+      text:"If your group's speculative artwork could do one thing for the natural world — expose a hidden relationship, bear witness to a loss, create care for something overlooked, or demand a specific change — what would it be? Who would need to encounter it, and what would you want them to do or feel afterward?",
+      discussion:"Draft the intervention: 'Our artwork intervenes in [specific ecological relationship or injustice] by [specific strategy].' Is it specific? Is it something art can do that a scientific report or policy paper can't? What does the artwork make possible — emotionally, politically, spatially — that nothing else can?",
+      research:['Activist ecology and direct action','Environmental humanities','Climate fiction (cli-fi)','Environmental law','Community-based environmental monitoring'],
+      researchNote:"Search 'eco-activist art', 'climate fiction as activism', 'community environmental monitoring digital tools' — Extinction Rebellion, the Sunrise Movement, and Indigenous environmental justice organizations publish manifestos that can ground your argument alongside academic sources.",
+      reveal:{
+        title:"Module 05 project thread",
+        body:"Topic: Digital Representations of Nature & Sustainability\n\nStrong papers here combine artwork analysis with at least one empirical or scientific framework — conservation data, energy infrastructure research, environmental justice writing, climate psychology, or multispecies theory. The artwork argument is strongest when it shows something that the data alone cannot."
+      }
+    }
+  ],
+
+  // ── SYNTHESIS (shared final questions) ─────────────────────────────────────
+  synthesis: [
+    {
+      phase:'synthesis', tags:['multi'],
+      text:"Now that your group has explored your chosen module in depth: describe your speculative artwork. Without worrying about what's technically possible, what does it look like? How would someone encounter it? What would they feel? What question would it leave them with?",
+      discussion:"One person describes it while others ask: 'What do I see?', 'What do I do?', 'What changes in me after experiencing it?' Use the responses to sharpen the description. Repeat until the description is specific enough that a stranger could picture it.",
+      research:['Speculative design','Critical design literature','Installation art theory','Participatory design','User experience research'],
+      researchNote:"Dunne & Raby's speculative design framework is useful non-art-history grounding. Also search 'participatory art and social change', 'installation art and embodied experience'.",
+      reveal:null
+    },
+    {
+      phase:'synthesis', tags:['multi'],
+      text:"Agree on a single sentence — out loud, together: 'After encountering our artwork, we want the audience to understand that ___.' Try writing it three different ways. Which version is most specific? Which is most arguable — meaning, someone could push back on it?",
+      discussion:"The best thesis makes a claim that isn't obviously true. 'Technology is bad for identity' is too obvious. 'Our artwork shows that [specific platform] [specific thing it does] to [specific population] in a way that [specific consequence]' — that's arguable. That's a paper.",
+      research:['Rhetoric and argumentation','Audience studies','Affect theory','Public pedagogy'],
+      researchNote:"Rhetoric research on how arguments persuade and audience studies on how people interpret artworks can help you build evidence for why your artwork achieves the effect you're claiming.",
+      reveal:{
+        title:"Next steps",
+        body:"1. Agree on your working topic and working question.\n2. Each group member searches one non-art field and brings back one article or source.\n3. Start sketching what the speculative artwork could look like — even a rough drawing counts.\n\nThe proposal asks for: a thesis, an artwork concept, and a personal context paragraph. Today's conversation is your raw material."
+      }
+    }
+  ]
+};
+
+// Flattened sequence state — computed once module is selected
+// Phase: 0 = shared Q1, 1 = shared Q2, 2 = shared Q3 (then show picker)
+//        After pick: 3+ = module Qs, then synthesis Qs
+
+const ADMIN_CODE = "admin123";
+let db, sessionRef;
+let sessionId, userName, groupName, isAdmin = false;
+let currentStep = 0;   // index into flatSequence[]
+let selectedModule = null; // 'm02'|'m03'|'m04'|'m05'|null
+let flatSequence = [];    // built after module selection
+let allAnswers = {};
+let pendingModuleChoice = null;
+
+const MODULE_META = {
+  m02:{ label:'MOD 02', title:'Human / Identity / Self / Body', desc:'Multiple selves, embodiment, the body as data, connection and isolation.' },
+  m03:{ label:'MOD 03', title:'Information & Communication', desc:'Misinformation, surveillance, algorithmic power, how we communicate across difference.' },
+  m04:{ label:'MOD 04', title:'Reality', desc:'Simulation, virtual experience, AI-generated worlds, what counts as real.' },
+  m05:{ label:'MOD 05', title:'Nature / Ecology / Environment', desc:'The environmental cost of tech, digital nature, species loss, climate and care.' }
+};
+
+function buildSequence(mod) {
+  return [
+    ...QUESTIONS.shared,
+    ...(QUESTIONS[mod] || []),
+    ...QUESTIONS.synthesis
+  ];
+}
+
+// ── FIREBASE ──────────────────────────────────────────────────────────────────
+(async () => {
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const fs = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const cfg = {
+      apiKey:"AIzaSyAfLbeZms8q5hDF2fEf346I36drIMP7S40",
+      authDomain:"art104-module06-group-discu-1.firebaseapp.com",
+      projectId:"art104-module06-group-discu-1",
+      storageBucket:"art104-module06-group-discu-1.firebasestorage.app",
+      messagingSenderId:"464442843848",
+      appId:"1:464442843848:web:64258e461ea480001f3bfd",
+      measurementId:"G-D4YZCW92X5"
+    };
+    initializeApp(cfg);
+    db = fs.getFirestore();
+    window._fs = fs;
+    document.getElementById('setup-screen').style.display = 'flex';
+  } catch(e){ alert('Firebase failed: '+e.message); }
+})();
+
+let selectedRole = 'student';
+window.selectRole = (role, btn) => {
+  selectedRole = role;
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('admin-code-field').style.display = role==='admin'?'block':'none';
+};
+
+window.joinSession = async () => {
+  const sId = document.getElementById('session-id').value.trim();
+  const uName = document.getElementById('user-name').value.trim();
+  const gName = document.getElementById('group-name').value.trim();
+  if (!sId||!uName) return showToast('Please fill in Session ID and Your Name');
+  if (selectedRole==='admin'){
+    if (document.getElementById('admin-code-input').value!==ADMIN_CODE) return showToast('Incorrect admin code');
+    isAdmin = true;
+  }
+  const btn = document.getElementById('join-btn');
+  btn.disabled=true; btn.textContent='Joining…';
+  sessionId=sId; userName=uName; groupName=gName||'No group';
+  const { doc, setDoc, getDoc, serverTimestamp } = window._fs;
+  sessionRef = doc(db,'sessions_branch',sessionId);
+  const snap = await getDoc(sessionRef);
+  if (!snap.exists()) await setDoc(sessionRef,{currentStep:0,selectedModule:null,createdAt:serverTimestamp()});
+  await setDoc(doc(db,'sessions_branch',sessionId,'users',userName),{name:userName,group:groupName,joinedAt:serverTimestamp()},{merge:true});
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('header-session').textContent='◈ '+sessionId;
+  document.getElementById('header-user').textContent=(isAdmin?'▲ ':'◈ ')+userName+(groupName?' · '+groupName:'');
+  if (isAdmin) document.getElementById('admin-panel').style.display='block';
+  document.getElementById('student-panel').style.display='flex';
+  startListening();
+};
+
+let prevStep = -1;
+function startListening() {
+  const { onSnapshot, collection } = window._fs;
+  onSnapshot(sessionRef, snap => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    const newStep = data.currentStep||0;
+    const newMod = data.selectedModule||null;
+    const didAdvance = newStep > prevStep && prevStep >= 0;
+    prevStep = newStep;
+    currentStep = newStep;
+    if (newMod && newMod !== selectedModule) {
+      selectedModule = newMod;
+      flatSequence = buildSequence(selectedModule);
+      updateTrackBadge();
+    }
+    render(didAdvance);
+  });
+  onSnapshot(collection(db,'sessions_branch',sessionId,'answers'), snap => {
+    allAnswers = {};
+    snap.forEach(d=>{ allAnswers[d.id]=d.data(); });
+    render(false);
+  });
+}
+
+// ── RENDER ORCHESTRATOR ───────────────────────────────────────────────────────
+function render(didAdvance) {
+  const sharedCount = QUESTIONS.shared.length; // 3
+  const selBlock = document.getElementById('module-select-block');
+
+  // Show reveal for the question we just left (unless we're at the selection screen)
+  if (didAdvance && selectedModule) {
+    renderRevealZone(currentStep - 1);
+  } else if (didAdvance && !selectedModule && currentStep === sharedCount) {
+    // Just finished shared Q3 — show its reveal above the module picker
+    renderRevealZone(sharedCount - 1);
+  } else if (currentStep === 0) {
+    document.getElementById('reveal-zone').innerHTML = '';
+  }
+
+  // Show module picker when all shared Qs done but no module chosen yet
+  if (currentStep >= sharedCount && !selectedModule) {
+    // Only build selector if not already showing (preserves admin's clicked selection)
+    if (selBlock.style.display !== 'block') {
+      selBlock.innerHTML = buildModuleSelector();
+      selBlock.style.display = 'block';
+    }
+    document.getElementById('main-question-block').innerHTML = '';
+    document.getElementById('prev-questions-block').innerHTML = '';
+    return;
+  }
+
+  selBlock.style.display = 'none';
+  renderCurrentQuestion();
+  renderPreviousQuestions();
+}
+
+function buildModuleSelector() {
+  const isAdminUser = isAdmin;
+  const opts = Object.entries(MODULE_META).map(([key,m]) => `
+    <button class="module-choice-btn ${key}" onclick="pickModule('${key}',this)">
+      <span class="mc-label">${m.label}</span>
+      <span class="mc-title">${m.title}</span>
+      <span class="mc-desc">${m.desc}</span>
+    </button>`).join('');
+  return `
+    <div class="module-select-card">
+      <div class="module-select-eyebrow">// Choose your track</div>
+      <div class="module-select-title">Which module does your group want to explore?</div>
+      <div class="module-select-sub">Based on everything that came up in Q1–Q3 — especially what made someone's voice change in Q3 — pick the module that most closely matches what your group is genuinely curious about. You can always connect to other modules later. This is about finding your strongest starting point.</div>
+      <div class="module-choice-grid">${opts}</div>
+      <div class="module-confirm-row">
+        <button class="btn-confirm-module" id="confirm-mod-btn" onclick="confirmModule()" ${isAdminUser?'':'disabled'} ${!isAdminUser?'style="display:none"':''}>Confirm Module →</button>
+        ${!isAdminUser ? `<span class="module-confirm-note">Discuss with your group, then tell your instructor which module you've chosen. The instructor will advance the session once all groups have decided.</span>` : `<span class="module-confirm-note" id="mod-confirm-note">Select a module above, then confirm.</span>`}
+      </div>
+    </div>`;
+}
+
+window.pickModule = (mod, btn) => {
+  if (!isAdmin) return;
+  document.querySelectorAll('.module-choice-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  pendingModuleChoice = mod;
+  const confirmBtn = document.getElementById('confirm-mod-btn');
+  if (confirmBtn) { confirmBtn.classList.add('ready'); }
+  const note = document.getElementById('mod-confirm-note');
+  if (note) note.textContent = `Module selected: ${MODULE_META[mod].title}`;
+};
+
+window.confirmModule = async () => {
+  if (!pendingModuleChoice) return showToast('Please select a module first');
+  const { updateDoc } = window._fs;
+  await updateDoc(sessionRef, { selectedModule: pendingModuleChoice, currentStep: QUESTIONS.shared.length });
+  showToast(`▶ Module set: ${MODULE_META[pendingModuleChoice].title}`);
+};
+
+function updateTrackBadge() {
+  const badge = document.getElementById('track-badge');
+  if (!selectedModule || !badge) return;
+  badge.className = `track-badge ${selectedModule}`;
+  badge.textContent = MODULE_META[selectedModule]?.label || selectedModule;
+  badge.style.display = 'inline-block';
+}
+
+// ── RENDER CURRENT QUESTION ────────────────────────────────────────────────────
+function renderCurrentQuestion() {
+  const block = document.getElementById('main-question-block');
+  const sharedCount = QUESTIONS.shared.length;
+
+  // ── Still in shared phase (no module selected yet, or currentStep within shared range) ──
+  if (currentStep < sharedCount) {
+    const qObj = QUESTIONS.shared[currentStep];
+    const myKey = `q${currentStep}_${userName}`;
+    const myAnswer = allAnswers[myKey];
+    const responses = getResponsesForQ(currentStep);
+    const prog = `${currentStep + 1} of ${sharedCount} — then choose track`;
+    block.innerHTML = buildQuestionHTML(qObj, currentStep, prog, myAnswer, responses);
+    return;
+  }
+
+  // ── Module not yet chosen — module picker is showing, blank this area ──
+  if (!selectedModule) {
+    block.innerHTML = '';
+    return;
+  }
+
+  // ── Module-track phase ──
+  if (flatSequence.length === 0) flatSequence = buildSequence(selectedModule);
+
+  if (currentStep >= flatSequence.length) {
+    block.innerHTML = `<div style="text-align:center;padding:4rem 2rem">
+      <h2 style="font-family:'Fraunces',serif;font-size:2rem;font-style:italic;font-weight:300;margin-bottom:.75rem;color:var(--lichen)">Discovery Complete</h2>
+      <p style="color:var(--mist)">You've mapped your interests and built your argument. Now comes the making.</p></div>`;
+    return;
+  }
+
+  const qObj = flatSequence[currentStep];
+  const myKey = `q${currentStep}_${userName}`;
+  const myAnswer = allAnswers[myKey];
+  const responses = getResponsesForQ(currentStep);
+  block.innerHTML = buildQuestionHTML(qObj, currentStep, `${currentStep + 1} / ${flatSequence.length}`, myAnswer, responses);
+}
+
+function buildQuestionHTML(qObj, stepIdx, progressLabel, myAnswer, responses) {
+  const trackClass = qObj.phase !== 'shared' && qObj.phase !== 'synthesis' && qObj.phase !== 'multi' ? `track-${qObj.phase}` : '';
+  const tagsHtml = (qObj.tags||[]).map(t=>`<span class="q-tag ${t}">${tagLabel(t)}</span>`).join('');
+  const disc = myAnswer ? myAnswer.discussion||'' : '';
+  const res = myAnswer ? myAnswer.researchDir||'' : '';
+  return `
+    <div class="question-header ${trackClass}">
+      <div class="q-top-row">
+        <div style="flex:1">
+          <div class="q-number">// QUESTION_${String(stepIdx+1).padStart(2,'0')}</div>
+          <div class="q-tags">${tagsHtml}</div>
+          <div class="q-text">${esc(qObj.text)}</div>
+        </div>
+        <div class="q-progress">${esc(String(progressLabel))}</div>
+      </div>
+    </div>
+    <div class="discussion-block">
+      <span class="disc-icon">// Group task</span>
+      <div class="disc-text">${esc(qObj.discussion)}</div>
+    </div>
+    <div class="research-block">
+      <div class="research-header">
+        <span class="research-label">// Research outside art — look here for articles</span>
+        <div class="research-rule"></div>
+      </div>
+      <div class="research-chips">${(qObj.research||[]).map(f=>`<span class="research-chip">${esc(f)}</span>`).join('')}</div>
+      ${qObj.researchNote?`<div class="research-note">${esc(qObj.researchNote)}</div>`:''}
+    </div>
+    <div class="answer-section">
+      <div class="answer-layout">
+        <div>
+          <span class="answer-col-label">Group Discussion Notes</span>
+          <span class="answer-col-sub">What did your group say? Key agreements, disagreements, surprises?</span>
+          <textarea class="ta" id="ta-disc" placeholder="Summarize your group's conversation…" ${myAnswer?'disabled':''}>${esc(disc)}</textarea>
+        </div>
+        <div>
+          <span class="answer-col-label">Research Directions</span>
+          <span class="answer-col-sub">Which fields or search terms felt most relevant? Any leads to follow up?</span>
+          <textarea class="ta" id="ta-res" placeholder="e.g. 'filter bubble research', environmental justice journals…" ${myAnswer?'disabled':''}>${esc(res)}</textarea>
+        </div>
+      </div>
+      <div class="answer-actions">
+        <button class="btn-submit" onclick="submitAnswer(${stepIdx})" ${myAnswer?'disabled':''}>${myAnswer?'✓ Submitted':'Submit Group Notes'}</button>
+        ${myAnswer?`<button class="btn-outline" onclick="editAnswer(${stepIdx})">Edit</button>`:''}
+        ${myAnswer&&groupName?`<span style="font-size:.72rem;color:var(--mist);padding:.4rem .2rem;">${esc(groupName)}</span>`:''}
+      </div>
+      <hr class="divider">
+      <div class="responses-label">Other Groups' Notes <span class="resp-count">${responses.length}</span></div>
+      <div class="responses-list">
+        ${responses.length===0?'<div class="no-responses">No notes yet — be the first to submit.</div>':responses.map(responseCard).join('')}
+      </div>
+    </div>`;
+}
+
+function tagLabel(t) {
+  const labels = {
+    multi:'All modules', m02:'MOD 02 · Identity', m03:'MOD 03 · Information',
+    m04:'MOD 04 · Reality', m05:'MOD 05 · Nature',
+    passion:'Passion / drive', novel:'Novel / unexpected',
+    activist:'Activist angle', lived:'Lived experience', artwork:'Artwork inspiration'
+  };
+  return labels[t]||t;
+}
+
+function renderRevealZone(stepIdx) {
+  const zone = document.getElementById('reveal-zone');
+  const seq = flatSequence.length > 0 ? flatSequence : QUESTIONS.shared;
+  const qObj = seq[stepIdx];
+  if (!qObj||!qObj.reveal) { zone.innerHTML=''; return; }
+  const r = qObj.reveal;
+  zone.innerHTML = `<div class="reveal-card">
+    <div class="reveal-label"><span>◈</span> Instructor Reveal</div>
+    ${r.title?`<div class="reveal-title">${esc(r.title)}</div>`:''}
+    ${r.body?`<div class="reveal-body">${esc(r.body)}</div>`:''}
+  </div>`;
+  zone.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderPreviousQuestions() {
+  const block = document.getElementById('prev-questions-block');
+  if (currentStep === 0) { block.innerHTML=''; return; }
+  // Use flatSequence when available, fall back to shared-only during shared phase
+  const seq = flatSequence.length > 0 ? flatSequence : QUESTIONS.shared;
+  let html = '<div class="prev-questions"><h3>// Previous Questions</h3>';
+  for (let i=currentStep-1; i>=0; i--) {
+    const qObj = seq[i];
+    if (!qObj) continue;
+    const responses = getResponsesForQ(i);
+    const hasReveal = !!qObj.reveal;
+    const myAnswer = allAnswers[`q${i}_${userName}`];
+    const missedBadge = !myAnswer&&!isAdmin?' · <span style="color:var(--sprout);font-weight:700">✎ needs notes</span>':'';
+    let catchupHtml = '';
+    if (!isAdmin&&!myAnswer) {
+      catchupHtml = `<div class="catchup-area">
+        <label>✎ Catch-up notes</label>
+        <div class="catchup-grid">
+          <div><span class="catchup-col-label">Discussion notes</span><textarea id="cu-d-${i}" placeholder="What did your group discuss?"></textarea></div>
+          <div><span class="catchup-col-label">Research directions</span><textarea id="cu-r-${i}" placeholder="Fields or search terms…"></textarea></div>
+        </div>
+        <button class="btn-submit" style="font-size:.82rem;padding:.45rem 1rem" onclick="submitCatchup(${i})">Submit Notes</button>
+      </div>`;
+    } else if (!isAdmin&&myAnswer) {
+      catchupHtml = `<div class="catchup-submitted">✓ Your group submitted notes for this question</div>`;
+    }
+    const tagsHtml = (qObj.tags||[]).map(t=>`<span class="q-tag ${t}" style="font-size:.55rem">${tagLabel(t)}</span>`).join('');
+    html += `<div class="prev-q-card">
+      <div class="prev-q-header" onclick="togglePrev(${i})">
+        <span class="prev-q-title">Q${i+1}: ${esc(qObj.text.length>68?qObj.text.slice(0,68)+'…':qObj.text)}</span>
+        <span class="prev-q-toggle" id="ptog-${i}">▼ ${responses.length} group${responses.length!==1?'s':''}${hasReveal?' · ◈':''}${missedBadge}</span>
+      </div>
+      <div class="prev-q-body" id="pbody-${i}">
+        <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.85rem;">${tagsHtml}</div>
+        ${buildRevealHtmlForStep(i)}
+        ${catchupHtml}
+        <div style="margin-top:${(hasReveal||catchupHtml)?'1rem':'0'}">
+          ${responses.length===0?'<div class="no-responses">No notes yet.</div>':responses.map(responseCard).join('')}
+        </div>
+      </div>
+    </div>`;
+  }
+  html += '</div>';
+  block.innerHTML = html;
+}
+
+function buildRevealHtmlForStep(i) {
+  const seq = flatSequence.length > 0 ? flatSequence : QUESTIONS.shared;
+  const qObj = seq[i];
+  if (!qObj||!qObj.reveal) return '';
+  const r = qObj.reveal;
+  return `<div class="reveal-card" style="margin-bottom:1rem">
+    <div class="reveal-label"><span>◈</span> Instructor Reveal</div>
+    ${r.title?`<div class="reveal-title">${esc(r.title)}</div>`:''}
+    ${r.body?`<div class="reveal-body">${esc(r.body)}</div>`:''}
+  </div>`;
+}
+
+window.togglePrev = (i) => {
+  const body = document.getElementById(`pbody-${i}`);
+  const tog = document.getElementById(`ptog-${i}`);
+  body.classList.toggle('open');
+  const open = body.classList.contains('open');
+  const seq = flatSequence.length>0?flatSequence:QUESTIONS.shared;
+  const cnt = getResponsesForQ(i).length;
+  const hr = !!(seq[i]&&seq[i].reveal);
+  tog.textContent = `${open?'▲':'▼'} ${cnt} group${cnt!==1?'s':''}${hr?' · ◈':''}`;
+};
+
+function responseCard(r) {
+  const mine = r.user===userName;
+  const hasD = r.discussion&&r.discussion.trim();
+  const hasR = r.researchDir&&r.researchDir.trim();
+  return `<div class="response-card ${mine?'mine':''}">
+    <div class="response-meta">
+      <span class="resp-name ${mine?'mine':''}">${mine?'◈ Your Group':esc(r.user)}</span>
+      ${r.group?`<span class="resp-group">${esc(r.group)}</span>`:''}
+      <span class="resp-time">${r.timestamp?fmtTime(r.timestamp):''}</span>
+    </div>
+    ${(hasD||hasR)?`
+    <div class="resp-body">
+      <div><div class="resp-half-label">Discussion notes</div><div class="resp-text">${esc(r.discussion||'—')}</div></div>
+      <div><div class="resp-half-label">Research directions</div><div class="resp-text">${esc(r.researchDir||'—')}</div></div>
+    </div>`:
+    `<div class="resp-text">${esc(r.text||'')}</div>`}
+  </div>`;
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
+window.submitAnswer = async (stepIdx) => {
+  const disc = document.getElementById('ta-disc')?.value.trim();
+  const res = document.getElementById('ta-res')?.value.trim();
+  if (!disc&&!res) return showToast('Please add at least one note before submitting');
+  const { doc, setDoc, serverTimestamp } = window._fs;
+  await setDoc(doc(db,'sessions_branch',sessionId,'answers',`q${stepIdx}_${userName}`),{
+    questionIndex:stepIdx, user:userName, group:groupName,
+    discussion:disc||'', researchDir:res||'', text:disc||res||'',
+    timestamp:serverTimestamp()
+  });
+  showToast('✓ Group notes submitted');
+};
+
+window.editAnswer = async (stepIdx) => {
+  const { doc, deleteDoc } = window._fs;
+  await deleteDoc(doc(db,'sessions_branch',sessionId,'answers',`q${stepIdx}_${userName}`));
+  showToast('Notes cleared — you can resubmit');
+};
+
+window.submitCatchup = async (qi) => {
+  const disc = document.getElementById(`cu-d-${qi}`)?.value.trim();
+  const res = document.getElementById(`cu-r-${qi}`)?.value.trim();
+  if (!disc&&!res) return showToast('Please write something before submitting');
+  const { doc, setDoc, serverTimestamp } = window._fs;
+  await setDoc(doc(db,'sessions_branch',sessionId,'answers',`q${qi}_${userName}`),{
+    questionIndex:qi, user:userName, group:groupName,
+    discussion:disc||'', researchDir:res||'', text:disc||res||'',
+    timestamp:serverTimestamp()
+  });
+  showToast('✓ Catch-up notes submitted');
+  render(false);
+};
+
+window.advanceQuestion = async () => {
+  const sharedCount = QUESTIONS.shared.length;
+  // If we're AT the last shared question (about to move to module selection), allow advance
+  // The module picker will show after this step
+  const seqLen = flatSequence.length > 0 ? flatSequence.length : sharedCount;
+  const next = currentStep + 1;
+
+  // Trying to advance past shared questions into module track without a module selected
+  if (next > sharedCount && !selectedModule) {
+    showToast('Select and confirm a module track first');
+    return;
+  }
+  if (next > seqLen) return showToast('No more questions!');
+  const { updateDoc } = window._fs;
+  await updateDoc(sessionRef, { currentStep: next });
+  showToast(next >= seqLen ? '// Session complete' : `▶ Advanced to Q${next+1}`);
+};
+
+window.confirmReset = () => {
+  document.getElementById('confirm-title').textContent = 'Reset All Data';
+  document.getElementById('confirm-msg').textContent = 'This deletes ALL notes, clears the module selection, and restarts from Q1.';
+  document.getElementById('confirm-code').value = '';
+  document.getElementById('confirm-modal').classList.add('open');
+  document.getElementById('confirm-btn').onclick = async () => {
+    if (document.getElementById('confirm-code').value!==ADMIN_CODE) return showToast('Wrong code');
+    await resetAll(); closeModal();
+  };
+};
+
+async function resetAll() {
+  const { collection, getDocs, deleteDoc, updateDoc, doc } = window._fs;
+  const snap = await getDocs(collection(db,'sessions_branch',sessionId,'answers'));
+  await Promise.all(snap.docs.map(d=>deleteDoc(doc(db,'sessions_branch',sessionId,'answers',d.id))));
+  await updateDoc(sessionRef,{ currentStep:0, selectedModule:null });
+  selectedModule=null; flatSequence=[]; currentStep=0; prevStep=-1;
+  document.getElementById('reveal-zone').innerHTML='';
+  document.getElementById('track-badge').style.display='none';
+  showToast('⟳ Session reset');
+}
+
+// ── PDF EXPORT ─────────────────────────────────────────────────────────────────
+function pdfHdr(jd,title,sub){
+  const W=jd.internal.pageSize.getWidth();
+  jd.setFillColor(14,15,24);jd.rect(0,0,W,68,'F');
+  jd.setFillColor(42,48,96);jd.rect(0,65,W,3,'F');
+  jd.setFont('helvetica','bold');jd.setFontSize(17);jd.setTextColor(238,237,248);jd.text(title,40,36);
+  jd.setFontSize(9);jd.setFont('helvetica','normal');jd.setTextColor(107,127,212);jd.text(sub,40,54);
+  return 88;
+}
+function pdfTxt(jd,text,x,y,mW,sz,sty,rgb){
+  jd.setFontSize(sz);jd.setFont('helvetica',sty);jd.setTextColor(...rgb);
+  const pH=jd.internal.pageSize.getHeight();
+  jd.splitTextToSize(String(text||''),mW).forEach(ln=>{
+    if(y>pH-55){jd.addPage();y=48;}jd.text(ln,x,y);y+=sz*1.5;
+  });
+  return y;
+}
+function pdfRes(jd,q,y,M,W){
+  if(!q||!q.research) return y;
+  y=pdfTxt(jd,'Research: '+q.research.join(' · '),M+6,y,W-M*2-12,8,'italic',[90,80,140]);
+  if(q.researchNote) y=pdfTxt(jd,q.researchNote,M+6,y,W-M*2-12,7.5,'italic',[110,100,150]);
+  return y+3;
+}
+
+window.exportAllPDF = () => {
+  const seq = flatSequence.length>0?flatSequence:QUESTIONS.shared;
+  const { jsPDF } = window.jspdf;
+  const jd = new jsPDF({orientation:'portrait',unit:'pt',format:'letter'});
+  const W=jd.internal.pageSize.getWidth(),M=42;
+  let y=pdfHdr(jd,'Session Export — All Group Notes',`Session: ${sessionId}   ·   Module: ${selectedModule?MODULE_META[selectedModule]?.title:'(not yet selected)'}   ·   ${new Date().toLocaleString()}`);
+  seq.forEach((q,qi)=>{
+    const responses=getResponsesForQ(qi);
+    if(y>jd.internal.pageSize.getHeight()-90){jd.addPage();y=48;}
+    jd.setFillColor(194,204,240);jd.rect(M,y-13,W-M*2,21,'F');
+    y=pdfTxt(jd,`Q${qi+1} [${(q.tags||[]).join(', ')}]: ${q.text}`,M+6,y,W-M*2-12,10,'bold',[14,15,24]);
+    y=pdfRes(jd,q,y+2,M,W);
+    if(responses.length===0){y=pdfTxt(jd,'No notes.',M+10,y,W-M*2-20,9,'italic',[80,90,110]);}
+    else{responses.forEach(r=>{
+      y=pdfTxt(jd,(r.group||r.user)+':',M+10,y,W-M*2-20,9,'bold',[42,48,96]);
+      if(r.discussion) y=pdfTxt(jd,'Discussion: '+r.discussion,M+22,y,W-M*2-32,9,'normal',[30,35,60]);
+      if(r.researchDir) y=pdfTxt(jd,'Research: '+r.researchDir,M+22,y,W-M*2-32,8.5,'italic',[80,70,120]);
+      y+=3;
+    });}
+    y+=10;
+  });
+  jd.save(`groupdisc-branch-${sessionId}-all.pdf`);
+  showToast('⬇ All notes PDF downloaded');
+};
+
+window.exportByGroupPDF = () => {
+  const seq = flatSequence.length>0?flatSequence:QUESTIONS.shared;
+  const byUser={};
+  Object.values(allAnswers).sort((a,b)=>a.questionIndex-b.questionIndex).forEach(r=>{
+    const k=r.group||r.user;if(!byUser[k])byUser[k]=[];byUser[k].push(r);
+  });
+  if(!Object.keys(byUser).length) return showToast('No notes to export yet');
+  const { jsPDF } = window.jspdf;
+  const jd=new jsPDF({orientation:'portrait',unit:'pt',format:'letter'});
+  const W=jd.internal.pageSize.getWidth(),M=42;let first=true;
+  Object.entries(byUser).forEach(([grp,answers])=>{
+    if(!first)jd.addPage();first=false;
+    let y=pdfHdr(jd,`Group: ${grp}`,`Session: ${sessionId}   ·   ${new Date().toLocaleString()}`);
+    answers.forEach(r=>{
+      if(y>jd.internal.pageSize.getHeight()-90){jd.addPage();y=48;}
+      const q=seq[r.questionIndex];
+      jd.setFillColor(194,204,240);jd.rect(M,y-13,W-M*2,21,'F');
+      y=pdfTxt(jd,`Q${r.questionIndex+1}: ${q?q.text:`Question ${r.questionIndex+1}`}`,M+6,y,W-M*2-12,10,'bold',[14,15,24]);
+      if(q) y=pdfRes(jd,q,y+2,M,W);
+      if(r.discussion) y=pdfTxt(jd,'Discussion: '+r.discussion,M+10,y,W-M*2-20,10,'normal',[30,35,60]);
+      if(r.researchDir) y=pdfTxt(jd,'Research: '+r.researchDir,M+10,y,W-M*2-20,9,'italic',[80,70,120]);
+      y+=12;
+    });
+  });
+  jd.save(`groupdisc-branch-${sessionId}-by-group.pdf`);
+  showToast('⬇ Per-group PDF downloaded');
+};
+
+window.exportMyNotesPDF = () => {
+  const seq=flatSequence.length>0?flatSequence:QUESTIONS.shared;
+  const mine=Object.values(allAnswers).filter(r=>r.user===userName).sort((a,b)=>a.questionIndex-b.questionIndex);
+  if(!mine.length) return showToast("Your group hasn't submitted any notes yet");
+  const { jsPDF } = window.jspdf;
+  const jd=new jsPDF({orientation:'portrait',unit:'pt',format:'letter'});
+  const W=jd.internal.pageSize.getWidth(),M=42;
+  let y=pdfHdr(jd,`Group Notes — ${groupName||userName}`,`Session: ${sessionId}   ·   Track: ${selectedModule?MODULE_META[selectedModule]?.title:'shared'}   ·   ${new Date().toLocaleString()}`);
+  mine.forEach(r=>{
+    if(y>jd.internal.pageSize.getHeight()-90){jd.addPage();y=48;}
+    const q=seq[r.questionIndex];
+    jd.setFillColor(194,204,240);jd.rect(M,y-13,W-M*2,21,'F');
+    y=pdfTxt(jd,`Q${r.questionIndex+1}: ${q?q.text:`Question ${r.questionIndex+1}`}`,M+6,y,W-M*2-12,10,'bold',[14,15,24]);
+    if(q) y=pdfRes(jd,q,y+2,M,W);
+    if(r.discussion) y=pdfTxt(jd,'Discussion: '+r.discussion,M+10,y,W-M*2-20,10,'normal',[30,35,60]);
+    if(r.researchDir) y=pdfTxt(jd,'Research: '+r.researchDir,M+10,y,W-M*2-20,9,'italic',[80,70,120]);
+    y+=14;
+  });
+  jd.save(`my-notes-${(groupName||userName).replace(/\s+/g,'-')}-${sessionId}.pdf`);
+  showToast('⬇ Your notes PDF downloaded');
+};
+
+// ── UTILS ──────────────────────────────────────────────────────────────────────
+function getResponsesForQ(idx){
+  return Object.values(allAnswers).filter(a=>a.questionIndex===idx)
+    .sort((a,b)=>(a.timestamp?.seconds||0)-(b.timestamp?.seconds||0));
+}
+function fmtTime(ts){
+  if(!ts) return '';
+  const d=ts.toDate?ts.toDate():new Date(ts.seconds*1000);
+  return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+let _tt;
+window.showToast = msg => {
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3200);
+};
+window.closeModal = () => document.getElementById('confirm-modal').classList.remove('open');
+</script>
+</body>
+</html>
